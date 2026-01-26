@@ -1,3 +1,12 @@
+'''
+camera_binary의 Docstring
+
+이진 변환을 한 이유 :
+흑백만 사용해도 인식은 가능하지만,
+숫자 영역을 안정적으로 추출하고
+끊긴 획을 보정하기 위해 이진화를 과정을 거침
+'''
+
 import cv2
 
 cap = cv2.VideoCapture(0)
@@ -11,19 +20,29 @@ while True:
     if not ret:
         break
 
-    # 1. 흑백
+    # 1. 흑백 변환
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # 2. 블러 (노이즈 제거)
+    # 작은 잡음이나 글씨 주변의 거친 픽셀을 부드럽게 만듦
+    # → 숫자 인식 시 불필요한 노이즈를 줄여 정확도 향상
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # 3. 이진화 (자동 임계값)
+    # 3. 이진화 (자동 임계값) : 흑 또는 백
+    '''
+    반환값 : _, binary
+    첫번째 반환값은 Otsu가 계산한 실제 임계값인데, 
+    우리는 쓰지 않으므로 _로 버림
+    '''
     _, binary = cv2.threshold(
-        blur,
-        0,
-        255,
-        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
+        blur,              # 입력 영상
+        0,                 # 기준 임계값 :  Otsu 알고리즘이 자동 결정(0은 의미 없음)
+        255,               # 기준을 넘는 픽셀에 적용할 값: 픽셀을 흰색으로 설정
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU # 이진화 반대 + 오츠 알고리즘 사용
     )
+    # THRESH_BINARY_INV: 글씨 부분을 흰색, 배경을 검은색으로 반전
+    # Otsu 알고리즘: 영상의 히스토그램을 분석해 최적의 임계값을 자동으로 선택
+    # → 손글씨 숫자를 더 뚜렷하게 분리
 
     cv2.imshow("Original", frame)
     cv2.imshow("Binary", binary)

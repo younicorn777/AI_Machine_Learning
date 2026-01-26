@@ -6,7 +6,7 @@ import serial, time
 # =========================
 # 1) 설정값 (필요하면 여기만 튜닝)
 # =========================
-PORT = "COM6"          # 아두이노 포트
+PORT = "COM7"          # 아두이노 포트
 BAUD = 9600
 
 CONF_TH = 0.9         # 신뢰도 임계값 (0.80~0.95 조절)
@@ -81,7 +81,7 @@ while True:
         blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
     )
 
-    # ✅ 7/8/9 특징(가로획/고리) 보존을 위해 연결/굵기 보강
+    # 7/8/9 특징(가로획/고리) 보존을 위해 연결/굵기 보강
     binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=1)
     binary = cv2.dilate(binary, kernel, iterations=1)
 
@@ -93,14 +93,14 @@ while True:
 
     digit = None
     conf = 0.0
-    margin = 0.0  # ✅ top1-top2 차이
+    margin = 0.0  # top1-top2 차이
 
     if contours and not stopped:
         cnt = max(contours, key=cv2.contourArea)
         if cv2.contourArea(cnt) > 800:
             x, y, w, h = cv2.boundingRect(cnt)
 
-            # ✅ ROI 잘림 방지를 위해 마진 부여
+            # ROI 잘림 방지를 위해 마진 부여
             m = 10
             x0 = max(0, x - m)
             y0 = max(0, y - m)
@@ -112,7 +112,7 @@ while True:
             roi = binary[y0:y1, x0:x1]
             sq = make_square(roi)
             sq = center_by_mass(sq)
-            # ✅ MNIST처럼 여백을 조금 주기 (도메인 갭 완화)
+            # MNIST처럼 여백을 조금 주기 (도메인 갭 완화)
             sq = cv2.copyMakeBorder(sq, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=0)
 
             digit_28 = cv2.resize(sq, (28,28)) / 255.0
@@ -140,7 +140,7 @@ while True:
     if stopped:
         status_text = "STOPPED (show 0 -> home). Press ESC to exit."
     else:
-        # ✅ conf + margin 조건을 동시에 만족할 때만 후보로 인정
+        # conf + margin 조건을 동시에 만족할 때만 후보로 인정
         if digit is not None and conf >= CONF_TH and margin >= MARGIN_TH:
             if candidate_digit is None or digit != candidate_digit:
                 candidate_digit = digit
