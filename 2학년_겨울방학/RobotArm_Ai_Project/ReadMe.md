@@ -102,6 +102,8 @@ The following table summarizes the development stages and the role of each scrip
 | 통신 테스트 | `serial_test.py` | Python–Arduino 시리얼 통신 검증 |
 | 통합 / 시연 | `digit_predict_live_stable.py` | 전처리·CNN·안정성 판단·로봇 제어를 통합한 최종 결과 |
 
+---
+
 ## 📝 Note
 
 This project focuses on integrating AI inference with a physical robotic system
