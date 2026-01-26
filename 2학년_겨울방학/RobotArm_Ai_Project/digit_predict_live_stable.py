@@ -12,7 +12,7 @@ BAUD = 9600
 CONF_TH = 0.9         # 신뢰도 임계값 (0.80~0.95 조절)
 MARGIN_TH = 0.2       # top1 - top2 확률 차이 (0.15~0.25 조절 추천)
 
-STABLE_SEC = 3.5       # “5초간 변함 없음” 기준
+STABLE_SEC = 3.5       # “3.5초간 변함 없음” 기준
 COOLDOWN_SEC = 1.0     # 너무 자주 보내지 않도록 최소 간격
 STOP_ON_ZERO = True    # 0이면 중단(요구사항 그대로)
 
@@ -54,7 +54,7 @@ def center_by_mass(img: np.ndarray) -> np.ndarray:
     return shifted
 
 # =========================
-# 3) "5초 안정성"을 위한 상태 변수들
+# 3) "3.5초 안정성"을 위한 상태 변수들
 # =========================
 candidate_digit = None      # 안정성 체크 중인 숫자
 candidate_start = 0.0       # 그 숫자가 유지되기 시작한 시간
@@ -134,7 +134,7 @@ while True:
             # preview = (digit_28.reshape(28,28) * 255).astype(np.uint8)
             # cv2.imshow("Model Input 28x28", preview)
 
-    # ---------- (B) 5초 안정성 판단 로직 ----------
+    # ---------- (B) 3.5초 안정성 판단 로직 ----------
     now = time.time()
 
     if stopped:

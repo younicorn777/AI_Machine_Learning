@@ -86,9 +86,21 @@ To avoid unstable robot behavior, the system confirms a digit only when:
 - ⭕ Stable system behavior in real-world conditions
 
 This approach significantly reduced misclassification issues such as
-7→4 and 9→7 observed during early testing.
+7→4 and 9→4 observed during early testing.
 
 ---
+
+## 📂 Code Structure & Development Stages
+
+The following table summarizes the development stages and the role of each script used in this project.
+
+| 단계 | 주요 파일 | 역할 |
+|------|----------|------|
+| 카메라 입력 | `camera_test.py`<br>`camera_gray.py`<br>`camera_binary.py` | 카메라 입력 및 영상 전처리 실험 |
+| 숫자 추출 | `digit_roi.py` | 숫자 영역(ROI) 추출 및 검증 |
+| CNN 준비 | `mnist_train.py`<br>`mnist_cnn.h5` | 숫자 인식용 CNN 모델 학습 및 저장 |
+| 통신 테스트 | `serial_test.py` | Python–Arduino 시리얼 통신 검증 |
+| 통합 / 시연 | `digit_predict_live_stable.py` | 전처리·CNN·안정성 판단·로봇 제어를 통합한 최종 결과 |
 
 ## 📝 Note
 
