@@ -47,7 +47,7 @@ while True:
         cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU # 이진화 반대 + 오츠 알고리즘 사용
     )
     # THRESH_BINARY_INV: 글씨 부분을 흰색, 배경을 검은색으로 반전
-    # Otsu 알고리즘: 영상의 히스토그램을 분석해 최적의 임계값을 자동으로 선택
+    # Otsu 알고리즘: 영상의 히스토그램을 분석해 최적의 임계값을 자동으로 선택(조명 변화에 대응)
     # → 손글씨 숫자를 더 뚜렷하게 분리
 
     cv2.imshow("Original", frame)
