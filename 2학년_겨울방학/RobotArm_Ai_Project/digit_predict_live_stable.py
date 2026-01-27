@@ -1,33 +1,47 @@
+'''
+digit_predict_live_stable의 Docstring
+
+실시간 손글씨 숫자 인식 + 아두이노 전송 프로그램
+
+이 코드의 목적:
+- 웹캠으로 입력된 손글씨 숫자를 CNN(MNIST 학습 모델)로 인식
+- 인식된 숫자가 일정 시간(3.5초) 동안 안정적으로 유지될 때만 '확정'으로 판단
+- 확정된 숫자를 아두이노로 시리얼 통신을 통해 전송
+- 숫자가 0으로 확정되면 시스템을 중단한다 (STOP_ON_ZERO)
+'''
+
 import cv2
 import numpy as np
 import tensorflow as tf
 import serial, time
 
 # =========================
-# 1) 설정값 (필요하면 여기만 튜닝)
+# 1) 설정값
 # =========================
 PORT = "COM7"          # 아두이노 포트
-BAUD = 9600
+BAUD = 9600            # 통신 속도 (baud rate)
 
-CONF_TH = 0.9         # 신뢰도 임계값 (0.80~0.95 조절)
-MARGIN_TH = 0.2       # top1 - top2 확률 차이 (0.15~0.25 조절 추천)
+CONF_TH = 0.9         # 신뢰도 임계값 (예측 확률이 이 이상이어야 인정)(0.80~0.95 조절)
+MARGIN_TH = 0.2       # top1 - top2 확률 차이 (구분이 확실해야 인정)(0.15~0.25 조절)
 
-STABLE_SEC = 3.5       # “3.5초간 변함 없음” 기준
-COOLDOWN_SEC = 1.0     # 너무 자주 보내지 않도록 최소 간격
-STOP_ON_ZERO = True    # 0이면 중단(요구사항 그대로)
+STABLE_SEC = 3.5       # 3.5초 동안 숫자가 변하지 않아야 '확정'
+COOLDOWN_SEC = 1.0     # 최소 전송 간격 (중복 전송 방지)
+STOP_ON_ZERO = True    # 0 확정 시 시스템 중단
 
 # =========================
 # 2) 모델 로드 / 시리얼 연결
 # =========================
+# 학습된 CNN 모델 불러오기
 model = tf.keras.models.load_model("mnist_cnn.h5")
 
+# 아두이노 시리얼 연결
 ser = serial.Serial(PORT, BAUD, timeout=1)
 time.sleep(2)  # Arduino reset 대기
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0) # 웹캠 열기
 
+# ROI를 정사각형으로 패딩하는 함수
 def make_square(img: np.ndarray) -> np.ndarray:
-    """ROI를 정사각형으로 패딩하여 중앙정렬에 유리하게 만듦"""
     h, w = img.shape
     size = max(h, w)
     sq = np.zeros((size, size), dtype=np.uint8)
@@ -36,8 +50,8 @@ def make_square(img: np.ndarray) -> np.ndarray:
     sq[y0:y0+h, x0:x0+w] = img
     return sq
 
+# ROI를 질량 중심(픽셀 평균 위치) 기준으로 중앙 정렬하는 함수
 def center_by_mass(img: np.ndarray) -> np.ndarray:
-    # img: binary (0/255), foreground=255
     ys, xs = np.where(img > 0)
     if len(xs) == 0 or len(ys) == 0:
         return img
