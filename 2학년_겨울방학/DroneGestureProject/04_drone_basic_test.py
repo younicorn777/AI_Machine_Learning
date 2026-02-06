@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # 드론 연결 시도
     if drone.open():
         print("Connected Success!")
-        sleep(1) # 연결 후 잠시 대기
+        sleep(0.01) # 연결 후 잠시 대기
     else:
         print("Connection Failed...")
         exit()
@@ -50,51 +50,68 @@ if __name__ == '__main__':
         # 이륙
         print("TakeOff - Waiting for 5 seconds to stabilize")
         drone.sendTakeOff()
-        sleep(0.01)
+        sleep(5)
 
         # 예시 동작 (주석 처리된 부분은 필요 시 활성화)
-        '''
+    
         # 앞/뒤로 움직임 테스트
+
+        print("Hover for 3 seconds")
+        hover(drone, 3000)
 
         print("Forward 2 seconds")
         pitch(drone, 20, 2000)
 
-        print("Hover for 1 seconds")
-        hover(drone, 1000)
-        sleep(0.01)
+        print("Hover for 3 seconds")
+        hover(drone, 3000)
 
         print("Backward 2 seconds")
         pitch(drone, -20, 2000)
+
+        print("Hover for 3 seconds")
+        hover(drone, 3000)
+        
         '''
-
         # 좌/우로 움직임 테스트
-        print("Move left 2 seconds")
-        roll(drone, -20, 2000)
 
-        print("Hover for 1 seconds")
-        hover(drone, 1000)
+        print("Hover for 3 seconds")
+        hover(drone, 3000)
+        
+        print("Move left 2 seconds")
+        roll(drone, -30, 2000)
+
+        print("Hover for 3 seconds")
+        hover(drone, 3000)
         
         print("Move right 2 seconds")
-        roll(drone, 20, 2000)
+        roll(drone, 30, 2000)
 
+        print("Hover for 2 seconds")
+        hover(drone, 2000)
+        '''
 
         '''
         #시계/반시계 방향 회전 테스트
-        print("Turn Right 2 seconds")
-        yaw(drone, -20, 2000)
 
-        print("Hover for 1 seconds")
-        hover(drone, 1000)
-        
+        print("Hover for 3 seconds")
+        hover(drone, 3000)
+
+        print("Turn Right 3 seconds")
+        yaw(drone, -50, 3000)
+
+        print("Hover for 3 seconds")
+        hover(drone, 3000)
+
         print("Turn Left 3 seconds")
-        yaw(drone, 20, 2000)
+        yaw(drone, 50, 3000)
         '''
 
         # 안전을 위해 착륙 명령을 여러 번 실행 
         print("Landing")
-        for _ in range(2):       
-            drone.sendLanding()
-            sleep(0.01)
+        drone.sendLanding()
+        sleep(1)
+        drone.sendLanding()
+        sleep(1)
 
     # 사용자가 Ctrl+C 누르면, 즉시 착륙
     except KeyboardInterrupt:
