@@ -13,6 +13,19 @@ from e_drone.drone import *
 from e_drone.protocol import *
 
 # =========================
+# 튜닝 파라미터 
+# =========================
+MOVE_POWER = 30
+MOVE_MS = 800
+BRAKE_MS = 1000
+TAKEOFF_STABILIZE_SEC = 3.0
+
+# =========================
+# 비행 상태 (중복 명령 방지)
+# =========================
+is_flying = False
+
+# =========================
 # 기본 제어 함수
 # =========================
 
@@ -37,41 +50,69 @@ def hover(drone, duration_ms):
 
 # 이륙
 def mission_takeoff(drone):
+    global is_flying
+    if is_flying:
+        print("[SKIP] already flying (takeoff ignored)")
+        return
+
     print("TakeOff")
     drone.sendTakeOff()
-    sleep(3)              # 이륙 후 안정화 대기
-    hover(drone, 1500)    # 짧게 안정화
+    sleep(TAKEOFF_STABILIZE_SEC)
+    hover(drone, BRAKE_MS)
+    is_flying = True
 
 # 착륙
 def mission_land(drone):
-    print("Landing")
-    for _ in range(3):
+    global is_flying
+    if not is_flying:
+        print("[SKIP] already landed (landing ignored)")
+        # 그래도 안전을 위해 1회는 호출
         drone.sendLanding()
         sleep(0.5)
+        return
+
+    print("Landing")
+    drone.sendLanding()
+    sleep(1.0)
+    drone.sendLanding()
+    sleep(1.0)
+    is_flying = False
 
 # 전진 
 def mission_forward(drone):
+    if not is_flying:
+        print("[SKIP] not flying (forward ignored)")
+        return
     print("Forward")
-    pitch(drone, 30, 800)
-    hover(drone, 1000)
+    pitch(drone, +MOVE_POWER, MOVE_MS)
+    hover(drone, BRAKE_MS)
 
 # 후진
 def mission_backward(drone):
+    if not is_flying:
+        print("[SKIP] not flying (backward ignored)")
+        return
     print("Backward")
-    pitch(drone, -30, 800)
-    hover(drone, 1000)
+    pitch(drone, -MOVE_POWER, MOVE_MS)
+    hover(drone, BRAKE_MS)
 
 # 좌측 이동
 def mission_left(drone):
+    if not is_flying:
+        print("[SKIP] not flying (left ignored)")
+        return
     print("Move Left")
-    roll(drone, -30, 800)
-    hover(drone, 1000)
+    roll(drone, -MOVE_POWER, MOVE_MS)
+    hover(drone, BRAKE_MS)
 
 # 우측 이동
 def mission_right(drone):
+    if not is_flying:
+        print("[SKIP] not flying (right ignored)")
+        return
     print("Move Right")
-    roll(drone, 30, 800)
-    hover(drone, 1000)
+    roll(drone, +MOVE_POWER, MOVE_MS)
+    hover(drone, BRAKE_MS)
 
 # =========================
 # 숫자 매핑 함수
@@ -107,4 +148,4 @@ def execute_mission(drone, gesture_number):
         mission_right(drone)
 
     else:
-        print("No mapped action")
+        print("[NO MAP] gesture:", gesture_number)
