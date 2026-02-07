@@ -20,7 +20,7 @@ from time import sleep
 from e_drone.drone import *
 from e_drone.protocol import *
 
-from drone_missions import execute_mission # 제스처 숫자 → 드론 미션 매핑 함수
+import drone_missions
 
 # =========================
 # MediaPipe 설정
@@ -113,7 +113,9 @@ try:
 
         gesture = None
         
-        # 손 인식 결과가 있을 경우
+        # =========================
+        # 손 인식
+        # =========================
         if result.multi_hand_landmarks:
             for hand_landmarks in result.multi_hand_landmarks:
                 # 손 랜드마크 그리기
@@ -121,12 +123,29 @@ try:
                 # 손가락 개수 계산
                 gesture = count_fingers(hand_landmarks)
 
+        # 0 ~ 5만 인정 (그 외는 무시)
         if gesture is not None and (gesture < 0 or gesture > 5) :
             gesture = None
 
         now = time.time()
 
-        # ===== 손이 인식된 경우 =====
+        # =========================
+        # 화면 표시 영역
+        # =========================
+
+        # 1. 드론 상태 표시 (FLYING / LANDED)
+        flight_text = "FLYING" if drone_missions.is_flying else "LANDED"
+        cv2.putText(frame, f"Drone State: {flight_text}",
+                            (10, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
+        
+        # 2. 현재 인식된 제스처
+        gesture_text = "NONE" if gesture is None else str(gesture)
+        cv2.putText( frame, f"Gesture Now : {gesture_text}",
+                            (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2) 
+        
+        # =========================
+        # 안정성 로직 (Edge Trigger)
+        # =========================
         if gesture is not None:
              # 새로운 제스처 등장 시 후보 갱신
             if candidate_gesture is None or gesture != candidate_gesture:
@@ -135,19 +154,20 @@ try:
             else:
                 elapsed = now - candidate_start_time
 
-                cv2.putText(frame, f"Candidate: {gesture} stable {elapsed:.1f}s",
-                            (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                cv2.putText( frame, f"Stable Time : {elapsed:.1f}s",
+                                        (10, 105), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
                 # 안정성 만족 + 아직 실행 안했을 때만 실행
                 if elapsed >= STABLE_TIME and not gesture_active:
-                    print(f"[CONFIRMED] {gesture} -> execute mission")
-                    execute_mission(drone, gesture) # 제스처 숫자 -> 드론 미션 실행
+                    print(f"[CONFIRMED] {gesture}")
+                    drone_missions.execute_mission(drone, gesture) # 제스처 숫자 -> 드론 미션 실행
 
+                    # 실행 직후 후보 리셋
                     candidate_gesture = None
                     candidate_start_time = 0.0
-
                     gesture_active = True # 실행 후 잠금
 
+                    # 0번 : 착륙 후 종료
                     if gesture == 0 :
                         print("Landing and Exit")
                         sleep(1.0)
