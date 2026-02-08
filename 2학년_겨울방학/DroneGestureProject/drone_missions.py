@@ -21,8 +21,8 @@ BRAKE_MS = 400           # 이동 후 정지 안정화 (ms)
 TAKEOFF_STABILIZE_SEC = 3.0
 
 # 드리프트 보정(hover 기준)
-TRIM_ROLL = 8            # +면 오른쪽 보정
-TRIM_PITCH = 8           # +면 앞으로 보정
+TRIM_ROLL = 6            # +면 오른쪽 보정
+TRIM_PITCH = 6           # +면 앞으로 보정
 
 # =========================
 # 비행 상태 (중복 명령 방지)
