@@ -1,11 +1,12 @@
 '''
-04_drone_basic_test의 Docstring
+drone_basic_test의 Docstring
 
 드론 기본 비행 제어 프로그램
 
 이 코드의 목적:
 - 드론과 연결하여 이륙, 이동(roll, pitch, yaw, throttle), 호버링, 착륙을 제어
 - 축 제어 함수를 별도로 정의해 직관적으로 드론을 움직일 수 있도록 구성
+- 이동 시 관성 제어(Brake)를 추가하여 보다 안정적인 제어를 구현
 - 안전 초기화 루틴(safe_initialize)과 안전 착륙 루틴(safe_land)을 추가하여,
   예기치 못한 상황에서도 드론을 안전하게 제어할 수 있도록 함
 - 안전을 위해 예외 처리(KeyboardInterrupt, 일반 Exception) 시 즉시 착륙하도록 함
@@ -18,16 +19,16 @@ from e_drone.protocol import *
 # =========================
 # 튜닝 파라미터
 # =========================
-MOVE_POWER = 30       
-MOVE_MS = 1000
+MOVE_POWER = 30       # 기본 이동 파워  
+MOVE_MS = 1000        # 이동 시간(ms)
 
 BRAKE_POWER = 20      # 관성 제어 세기
 BRAKE_MS = 500        # 관성 제어 시간
 
-HOVER_MS = 1000
+HOVER_MS = 1000       # 호버링 유지 시간(ms)
 
-TRIM_ROLL = 5   
-TRIM_PITCH = 8 
+TRIM_ROLL = 5         # 드론 Roll 보정값
+TRIM_PITCH = 8        # 드론 Pitch 보정값
 
 '''
 TRIM_ROLL / TRIM_PITCH 기록
@@ -37,6 +38,8 @@ TRIM_ROLL / TRIM_PITCH 기록
 
 # =========================
 # 기본 제어
+# control : 드론 제어 명령
+# hover : 드론 호버링 (보정값 적용)
 # =========================
 def control(drone, roll, pitch, yaw, throttle, duration_ms):
     drone.sendControlWhile(roll, pitch, yaw, throttle, duration_ms)
@@ -97,7 +100,7 @@ def safe_initialize(drone):
     # 혹시 공중 상태로 남아있을 가능성 대비
     safe_land(drone)
 
-    # 제어값 0으로 덮어쓰기 (제어값 초기화)(호버 명령으로 초기화)
+    # 제어값 0으로 덮어쓰기 (호버 명령으로 제어값 초기화)
     hover(drone, 500)
     sleep(0.5)
 
@@ -143,7 +146,7 @@ if __name__ == '__main__':
         print("Hover 5s")
         hover(drone, 5000)
 
-        # 예시 동작 (주석 처리된 부분은 필요 시 활성화)
+        # 예시 동작 
         # 앞/뒤로 움직임 테스트
         print("Forward 2s")
         move_forward(drone)
@@ -153,6 +156,7 @@ if __name__ == '__main__':
         move_backward(drone)
         sleep(0.01)
 
+        # 좌/우로 움직임 테스트    
         print("Left 2s")    
         move_left(drone)
         sleep(0.01)
