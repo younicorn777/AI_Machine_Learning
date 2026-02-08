@@ -84,12 +84,8 @@ else:
     print("Connection Failed...")
     exit()
 
-# (안전) 시작 전에 착륙 + hover(제어값 초기화)로 상태 정리
-for _ in range(2):
-    drone.sendLanding()
-    sleep(0.3)
-drone.sendControlWhile(0, 0, 0, 0, 300)
-sleep(0.3)
+# 안전 초기화 호출
+drone_missions.safe_initialize(drone)
 
 # =========================
 # 카메라 시작
@@ -169,8 +165,6 @@ try:
 
                     # 0번 : 착륙 후 종료
                     if gesture == 0 :
-                        print("Landing and Exit")
-                        sleep(1.0)
                         break
 
         # ===== 손이 안 보이면, 잠금 해제 =====                    
@@ -186,15 +180,21 @@ try:
             break
 
 except KeyboardInterrupt:
-    print("\n[STOP] User forced stop -> Landing")
+    print("\n[STOP] Emergency Landing (KeyboardInterrupt)")
+
+except Exception as e:
+    print(f"[ERROR] {e}")
 
 finally:
-    # 종료 시 안전 착륙
-    for _ in range(2):
-        drone.sendLanding()
-        sleep(0.5)
+    print("Closing connection")
+    
+    drone_missions.mission_land(drone)
 
     cap.release()
     cv2.destroyAllWindows()
-    drone.close()
+    
+    for _ in range(3):
+        drone.close()
+        sleep(0.5)
+    
     print("Closed.")
