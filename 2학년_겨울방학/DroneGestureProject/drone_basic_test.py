@@ -16,23 +16,73 @@ from e_drone.drone import *
 from e_drone.protocol import *
 
 # =========================
-# 축 제어 함수 정의
+# 튜닝 파라미터
 # =========================
+MOVE_POWER = 30       
+MOVE_MS = 1000
 
-def roll(drone, power, duration_ms):
-    drone.sendControlWhile(power, 0, 0, 0, duration_ms)
+BRAKE_POWER = 20      # 관성 제어 세기
+BRAKE_MS = 500        # 관성 제어 시간
 
-def pitch(drone, power, duration_ms):
-    drone.sendControlWhile(0, power, 0, 0, duration_ms)
+HOVER_MS = 1000
 
-def yaw(drone, power, duration_ms):
-    drone.sendControlWhile(0, 0, power, 0, duration_ms)
+TRIM_ROLL = 5   
+TRIM_PITCH = 8 
 
-def throttle(drone, power, duration_ms):
-    drone.sendControlWhile(0, 0, 0, power, duration_ms)
+'''
+TRIM_ROLL / TRIM_PITCH 기록
+1차 : 10 / 12
+2차 : 5 / 8 => 최적
+''' 
+
+# =========================
+# 기본 제어
+# =========================
+def control(drone, roll, pitch, yaw, throttle, duration_ms):
+    drone.sendControlWhile(roll, pitch, yaw, throttle, duration_ms)
 
 def hover(drone, duration_ms):
-    drone.sendControlWhile(0, 0, 0, 0, duration_ms)
+    control(drone, TRIM_ROLL, TRIM_PITCH, 0, 0, duration_ms)
+
+# =========================
+# 이동 + 관성 제어
+# =========================
+def move_forward(drone):
+    print("Forward")
+    control(drone, 0, MOVE_POWER, 0, 0, MOVE_MS)
+
+    # 관성 제어 (반대 방향)
+    print("Brake")
+    control(drone, 0, -BRAKE_POWER, 0, 0, BRAKE_MS)
+
+    hover(drone, HOVER_MS)
+
+def move_backward(drone):
+    print("Backward")
+    control(drone, 0, -MOVE_POWER, 0, 0, MOVE_MS)
+
+    print("Brake")
+    control(drone, 0, BRAKE_POWER, 0, 0, BRAKE_MS)
+
+    hover(drone, HOVER_MS)
+
+def move_left(drone):
+    print("Left")
+    control(drone, -MOVE_POWER, 0, 0, 0, MOVE_MS)
+
+    print("Brake")
+    control(drone, BRAKE_POWER, 0, 0, 0, BRAKE_MS)
+
+    hover(drone, HOVER_MS)
+
+def move_right(drone):
+    print("Right")
+    control(drone, MOVE_POWER, 0, 0, 0, MOVE_MS)
+
+    print("Brake")
+    control(drone, -BRAKE_POWER, 0, 0, 0, BRAKE_MS)
+
+    hover(drone, HOVER_MS)
 
 # =========================
 # 안전 초기화 루틴
@@ -45,9 +95,7 @@ def safe_initialize(drone):
     print("[INIT] Resetting drone state...")
 
     # 혹시 공중 상태로 남아있을 가능성 대비
-    for _ in range(3):
-        drone.sendLanding()
-        sleep(0.3)
+    safe_land(drone)
 
     # 제어값 0으로 덮어쓰기 (제어값 초기화)(호버 명령으로 초기화)
     hover(drone, 500)
@@ -92,44 +140,26 @@ if __name__ == '__main__':
         drone.sendTakeOff()
         sleep(3)
 
-        print("Hover 2s")
-        hover(drone, 2000)
+        print("Hover 5s")
+        hover(drone, 5000)
 
         # 예시 동작 (주석 처리된 부분은 필요 시 활성화)
         # 앞/뒤로 움직임 테스트
         print("Forward 2s")
-        pitch(drone, 30, 2000)  
-        print("Hover 2s")
-        hover(drone, 2000)
+        move_forward(drone)
+        sleep(0.01)
 
         print("Backward 2s")
-        pitch(drone, -30, 2000)
-        print("Hover 2s")
-        hover(drone, 2000)
+        move_backward(drone)
+        sleep(0.01)
 
-        """
-        # 좌/우로 움직임 테스트
+        print("Left 2s")    
+        move_left(drone)
+        sleep(0.01)
 
-        print("Move Left 2s")
-        roll(drone, -30, 2000)
-        hover(drone, 2000)
-
-        print("Move Right 2s")
-        roll(drone, 30, 2000)
-        hover(drone, 2000)
-        """
-
-        """
-        #시계/반시계 방향 회전 테스트
-
-        print("Rotate CW 2s")
-        yaw(drone, -30, 2000)
-        hover(drone, 2000)
-
-        print("Rotate CCW 2s")
-        yaw(drone, 30, 2000)
-        hover(drone, 2000)
-        """
+        print("Right 2s")
+        move_right(drone)
+        sleep(0.01)
 
         # 정상 착륙
         safe_land(drone)
@@ -147,4 +177,6 @@ if __name__ == '__main__':
     # 어떤 상황에서도 통신 종료
     finally:
         print("Closing connection")
-        drone.close()
+        for _ in range(3):
+            drone.close()
+            sleep(0.5)
