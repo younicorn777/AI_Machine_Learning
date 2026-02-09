@@ -15,15 +15,15 @@ from e_drone.protocol import *
 # 튜닝 파라미터 
 # =========================
 MOVE_POWER = 30
-MOVE_MS = 1500
+MOVE_MS = 2000
 
 BRAKE_POWER = 20
 BRAKE_MS = 700
 
-HOVER_MS = 2000
+HOVER_MS = 1000
 
 TRIM_ROLL = 2
-TRIM_PITCH = 7
+TRIM_PITCH = 12
 
 TAKEOFF_STABILIZE_SEC = 3.0
 
@@ -63,7 +63,7 @@ def mission_takeoff(drone):
     sleep(TAKEOFF_STABILIZE_SEC)
 
     # 이륙 직후 안정화
-    hover(drone, 2000)
+    hover(drone, 1000)
     is_flying = True
 
 def mission_land(drone):
