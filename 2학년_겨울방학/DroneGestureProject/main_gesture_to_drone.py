@@ -65,7 +65,7 @@ def count_fingers(hand_landmarks):
 # =========================
 # 안정성 판단 설정
 # =========================
-STABLE_TIME = 3.0       # 같은 제스처 3초 유지 시 확정
+STABLE_TIME = 1.0       # 같은 제스처 1초 유지 시 확정
 
 candidate_gesture = None   # 현재 후보 제스처
 candidate_start_time = 0.0 # 후보 시작 시간
@@ -93,7 +93,9 @@ drone_missions.safe_initialize(drone)
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     print("카메라를 열 수 없습니다.")
-    drone.close()
+    for _ in range(2):
+        drone.close()
+        sleep(0.5)
     exit()
 
 print("Gesture -> Drone control started (ESC 종료)")
@@ -179,21 +181,23 @@ try:
         if cv2.waitKey(1) & 0xFF == 27:
             break
 
+# 사용자가 Ctrl+C 누르면, 즉시 착륙
 except KeyboardInterrupt:
     print("\n[STOP] Emergency Landing (KeyboardInterrupt)")
+    drone_missions.mission_land(drone)
 
+# 그 외 모든 에러 발생 시, 즉시 착륙
 except Exception as e:
     print(f"[ERROR] {e}")
+    drone_missions.mission_land(drone)
 
 finally:
     print("Closing connection")
-    
-    drone_missions.mission_land(drone)
 
     cap.release()
     cv2.destroyAllWindows()
     
-    for _ in range(3):
+    for _ in range(2):
         drone.close()
         sleep(0.5)
     

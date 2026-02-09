@@ -15,15 +15,15 @@ from e_drone.protocol import *
 # 튜닝 파라미터 
 # =========================
 MOVE_POWER = 30
-MOVE_MS = 1000
+MOVE_MS = 1500
 
 BRAKE_POWER = 20
-BRAKE_MS = 500
+BRAKE_MS = 700
 
-HOVER_MS = 1000
+HOVER_MS = 2000
 
-TRIM_ROLL = 5
-TRIM_PITCH = 8
+TRIM_ROLL = 2
+TRIM_PITCH = 7
 
 TAKEOFF_STABILIZE_SEC = 3.0
 
@@ -42,9 +42,11 @@ def control(drone, roll, pitch, yaw, throttle, duration_ms):
     drone.sendControlWhile(roll, pitch, yaw, throttle, duration_ms)
 
 def hover(drone, duration_ms):
+    print("Hover")
     control(drone, TRIM_ROLL, TRIM_PITCH, 0, 0, duration_ms)
 
 def brake(drone, roll, pitch, duration_ms):
+    print("Brake")
     control(drone, roll, pitch, 0, 0, duration_ms)
 
 # =========================
@@ -61,7 +63,7 @@ def mission_takeoff(drone):
     sleep(TAKEOFF_STABILIZE_SEC)
 
     # 이륙 직후 안정화
-    hover(drone, 1500)
+    hover(drone, 2000)
     is_flying = True
 
 def mission_land(drone):
@@ -81,7 +83,6 @@ def mission_forward(drone):
 
     print("Forward")
     control(drone, 0, +MOVE_POWER, 0, 0, MOVE_MS)
-    print("Brake")
     brake(drone, 0, -BRAKE_POWER, BRAKE_MS)
     hover(drone, HOVER_MS)
 
@@ -92,7 +93,6 @@ def mission_backward(drone):
 
     print("Backward")
     control(drone, 0, -MOVE_POWER, 0, 0, MOVE_MS)
-    print("Brake")
     brake(drone, 0, +BRAKE_POWER, BRAKE_MS)
     hover(drone, HOVER_MS)
 
@@ -103,7 +103,6 @@ def mission_left(drone):
 
     print("Left")
     control(drone, -MOVE_POWER, 0, 0, 0, MOVE_MS)
-    print("Brake")
     brake(drone, +BRAKE_POWER, 0, BRAKE_MS)
     hover(drone, HOVER_MS)
 
@@ -114,7 +113,6 @@ def mission_right(drone):
 
     print("Right")
     control(drone, +MOVE_POWER, 0, 0, 0, MOVE_MS)
-    print("Brake")
     brake(drone, -BRAKE_POWER, 0, BRAKE_MS)
     hover(drone, HOVER_MS)
 
