@@ -20,7 +20,7 @@ from e_drone.protocol import *
 # 튜닝 파라미터
 # =========================
 MOVE_POWER = 30       # 기본 이동 파워  
-MOVE_MS = 1000        # 이동 시간(ms)
+MOVE_MS = 2000        # 이동 시간(ms)
 
 BRAKE_POWER = 20      # 관성 제어 세기
 BRAKE_MS = 500        # 관성 제어 시간
