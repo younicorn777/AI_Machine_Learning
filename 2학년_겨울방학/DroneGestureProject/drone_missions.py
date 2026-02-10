@@ -5,6 +5,7 @@ drone_missions의 Docstring
 - 드론과 연결하여 기본적인 축 제어(roll, pitch, yaw, throttle, hover)를 수행
 - 특정 미션 동작(이륙, 착륙, 전진, 후진, 좌측 이동, 우측 이동)을 함수로 정의
 - 손 제스처의 숫자 입력(gesture_number)에 따라 해당 미션을 실행할 수 있도록 매핑
+- 비행 상태 플래그(is_flying)를 두어 중복 명령을 방지하고, 안전한 제어를 구현
 '''
 
 from time import sleep
@@ -14,28 +15,23 @@ from e_drone.protocol import *
 # =========================
 # 튜닝 파라미터 
 # =========================
-MOVE_POWER = 30
-MOVE_MS = 2000
 
-BRAKE_POWER = 20
-BRAKE_MS = 700
+HOVER_MS = 1000  # 호버링 유지 시간(ms)
 
-HOVER_MS = 1000
+TRIM_ROLL = 3    # 호버링 시, Roll 보정값
+TRIM_PITCH = 12  # 호버링 시, Pitch 보정값
 
-TRIM_ROLL = 2
-TRIM_PITCH = 12
-
-TAKEOFF_STABILIZE_SEC = 3.0
+TAKEOFF_STABILIZE_SEC = 3.0 # 이륙 후 안정화 대기 시간(sec)
 
 # =========================
 # 비행 상태 (중복 명령 방지)
 # =========================
-is_flying = False
+is_flying = False   # 현재 드론이 비행 중인지 여부
 
 # =========================
 # 기본 제어
-# control : TRIM 없이 순수 제어값 전달 (이동/브레이크에 사용)
-# hover : TRIM 만 적용
+# control : TRIM 없이 순수 제어값 전달 (호버링/이동/브레이크에 사용)
+# hover : TRIM 보정값 만 적용
 # brake : 관성 제거용 브레이크 (반대 방향으로 짧게)
 # =========================
 def control(drone, roll, pitch, yaw, throttle, duration_ms):
@@ -82,8 +78,8 @@ def mission_forward(drone):
         return
 
     print("Forward")
-    control(drone, 0, +MOVE_POWER, 0, 0, MOVE_MS)
-    brake(drone, 0, -BRAKE_POWER, BRAKE_MS)
+    control(drone, 0, 40, 0, 0, 3000)
+    brake(drone, 0, -15, 500)
     hover(drone, HOVER_MS)
 
 def mission_backward(drone):
@@ -92,8 +88,8 @@ def mission_backward(drone):
         return
 
     print("Backward")
-    control(drone, 0, -MOVE_POWER, 0, 0, MOVE_MS)
-    brake(drone, 0, +BRAKE_POWER, BRAKE_MS)
+    control(drone, 0, -30, 0, 0, 2000)
+    brake(drone, 0, +10, 700)
     hover(drone, HOVER_MS)
 
 def mission_left(drone):
@@ -102,8 +98,8 @@ def mission_left(drone):
         return
 
     print("Left")
-    control(drone, -MOVE_POWER, 0, 0, 0, MOVE_MS)
-    brake(drone, +BRAKE_POWER, 0, BRAKE_MS)
+    control(drone, -30, 0, 0, 0, 2000)
+    brake(drone, +10, 0, 700)
     hover(drone, HOVER_MS)
 
 def mission_right(drone):
@@ -112,8 +108,8 @@ def mission_right(drone):
         return
 
     print("Right")
-    control(drone, +MOVE_POWER, 0, 0, 0, MOVE_MS)
-    brake(drone, -BRAKE_POWER, 0, BRAKE_MS)
+    control(drone, +30, 0, 0, 0, 2000)
+    brake(drone, -10, 0, 700)
     hover(drone, HOVER_MS)
 
 # =========================

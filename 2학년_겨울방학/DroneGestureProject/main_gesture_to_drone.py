@@ -70,7 +70,7 @@ STABLE_TIME = 1.0          # 같은 제스처 1초 유지 시 확정
 candidate_gesture = None   # 현재 후보 제스처
 candidate_start_time = 0.0 # 후보 시작 시간
 
-gesture_active = False 
+gesture_active = False     # 제스처 실행 잠금 플래그
 
 # =========================
 # 드론 연결
