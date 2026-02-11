@@ -181,8 +181,7 @@ The following table summarizes the development stages and the role of each scrip
 ## ⚠️ Limitations
 
 - Flight time limited (~5 minutes)  
-- Battery drain affects movement consistency  
-- No closed-loop position control  
+- Battery drain affects movement consistency    
 - Motion precision limited by available sensors  
 
 ---
@@ -193,7 +192,7 @@ The following table summarizes the development stages and the role of each scrip
 - ❌ Complex control theory  
 - ⭕ Real-time vision-to-hardware integration  
 - ⭕ Stable execution logic  
-- ⭕ Hardware-aware control tuning  
+- ⭕ Parameter tuning through real flight experiments  
 - ⭕ Safety-first system design  
 
 This project demonstrates how computer vision can be integrated with physical drone control,  
