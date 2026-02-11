@@ -18,7 +18,7 @@ from e_drone.protocol import *
 
 HOVER_MS = 1000  # 호버링 유지 시간(ms)
 
-TRIM_ROLL = 3    # 호버링 시, Roll 보정값
+TRIM_ROLL = 2    # 호버링 시, Roll 보정값
 TRIM_PITCH = 12  # 호버링 시, Pitch 보정값
 
 TAKEOFF_STABILIZE_SEC = 3.0 # 이륙 후 안정화 대기 시간(sec)
@@ -89,7 +89,7 @@ def mission_backward(drone):
 
     print("Backward")
     control(drone, 0, -30, 0, 0, 2000)
-    brake(drone, 0, +10, 700)
+    brake(drone, 0, +10, 500)
     hover(drone, HOVER_MS)
 
 def mission_left(drone):
@@ -99,7 +99,7 @@ def mission_left(drone):
 
     print("Left")
     control(drone, -30, 0, 0, 0, 2000)
-    brake(drone, +10, 0, 700)
+    brake(drone, +10, 0, 200)
     hover(drone, HOVER_MS)
 
 def mission_right(drone):
@@ -128,8 +128,8 @@ def safe_initialize(drone):
         drone.sendLanding()
         sleep(0.5)
 
-    # 제어값 초기화
-    hover(drone, 500)
+    # 제어값 초기화 : 모든 제어값 0
+    control(drone, 0, 0, 0, 0, 500)
     sleep(0.5)
 
     is_flying = False
