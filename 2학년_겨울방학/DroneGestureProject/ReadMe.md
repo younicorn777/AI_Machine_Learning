@@ -169,12 +169,12 @@ The following table summarizes the development stages and the role of each scrip
 
 | 단계 | 주요 파일 | 역할 |
 |------|----------|------|
-| 카메라 입력 | `camera_test.py` | 웹캠 동작 확인 |
-| 손 인식 디버그 | `hand_debug.py` | 손 랜드마크 시각화 |
-| 제스처 안정화 | `gesture_stable_command.py` | 안정성 판단 로직 구현 |
+| 카메라 테스트 | `camera_test.py` | 웹캠 동작 확인 |
+| 손 인식 디버깅 | `hand_debug.py` | 손 랜드마크 시각화 (MediaPipe) |
+| 제스처 안정화 | `gesture_stable_command.py` | 손가락 개수 → 숫자 계산 |
 | 드론 제어 실험 | `drone_basic_test.py` | 이동 파라미터 실험 및 튜닝 |
-| 미션 구조화 | `drone_missions.py` | 이동/브레이크/호버 구조 설계 |
-| 통합 / 시연 | `main_gesture_to_drone.py` | 제스처 → 드론 제어 통합 시스템 |
+| 드론 미션 설계 | `drone_missions.py` | 숫자별 드론 동작 매핑 |
+| 통합 제어 | `main_gesture_to_drone.py` | 제스처 → 드론 제어 통합 시스템 구현|
 
 ---
 
