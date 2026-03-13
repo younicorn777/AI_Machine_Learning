@@ -18,7 +18,7 @@ from e_drone.protocol import *
 
 HOVER_MS = 1000  # 호버링 유지 시간(ms)
 
-TRIM_ROLL = -8    # 호버링 시, Roll 보정값
+TRIM_ROLL = -4    # 호버링 시, Roll 보정값
 TRIM_PITCH = 12  # 호버링 시, Pitch 보정값
 
 TAKEOFF_STABILIZE_SEC = 3.0 # 이륙 후 안정화 대기 시간(sec)
@@ -108,7 +108,7 @@ def mission_right(drone):
         return
 
     print("Right")
-    control(drone, +30, 0, 0, 0, 1500)
+    control(drone, +30, 10, 0, 0, 1500)
     brake(drone, -10, 0, 700)
     hover(drone, HOVER_MS)
 
