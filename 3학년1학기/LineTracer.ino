@@ -1,27 +1,23 @@
-int RightMotor_E_pin = 5; int LeftMotor_E_pin = 6;
-int RightMotor_1_pin = 8; int RightMotor_2_pin = 9;
-int LeftMotor_3_pin = 10; int LeftMotor_4_pin = 11;
+int RightMotor_E_pin = 5;
+int LeftMotor_E_pin = 6;
+int RightMotor_1_pin = 8;
+int RightMotor_2_pin = 9;
+int LeftMotor_3_pin = 10;
+int LeftMotor_4_pin = 11;
 
-int L_Line = A5; int C_Line = A4; int R_Line = A3;
+int L_Line = A5;
+int C_Line = A4;
+int R_Line = A3;
 
-/*
-건전지:
-speed_max = 200; 
-speed_turn_outer = 160; // 150(실패)
-int speed_turn_inner = 180; // 170(실패) 
+int L_MotorSpeed = 210; // 230, 210(최근 잘 되던 속도), 205(0527: 회전34와 잘 되던 속도) ,210(36)
+int R_MotorSpeed = 190; // 210, 190(최근 잘 되던 속도), 185(0527: 회전34와 잘 되던 속도),190(34)
 
-축전지:
-speed_max = 240(성공); 
-speed_turn_outer = 170(성공); 
-int speed_turn_inner = 190(성공); 
-*/
+int SL = 1;
+int SC = 1;
+int SR = 1;
 
-
-// 상태 변수
-int speed_max = 200; 
-int speed_turn_outer = 155; 
-int speed_turn_inner = 175; 
-int diff = 20; // 오른쪽 모터가 20 더 빠르므로 빼줄 값
+unsigned long startTime = 0; 
+bool isBoosterActive = true; 
 
 void setup() {
   pinMode(RightMotor_E_pin, OUTPUT);
@@ -30,6 +26,8 @@ void setup() {
   pinMode(RightMotor_2_pin, OUTPUT);
   pinMode(LeftMotor_3_pin, OUTPUT);
   pinMode(LeftMotor_4_pin, OUTPUT);
+  
+  startTime = millis(); 
 }
 
 void loop() {
@@ -37,27 +35,39 @@ void loop() {
   int C = digitalRead(C_Line);
   int R = digitalRead(R_Line);
 
-  // 1. 직진 (가운데 검은선)
-  if (L == 0 && C == 1 && R == 0) {
-    digitalWrite(LeftMotor_3_pin, 1);  digitalWrite(LeftMotor_4_pin, 0);
-    digitalWrite(RightMotor_1_pin, 1); digitalWrite(RightMotor_2_pin, 0);
-    analogWrite(LeftMotor_E_pin, speed_max);
-    analogWrite(RightMotor_E_pin, speed_max - diff); // 오른쪽 속도 다운
+  int currentL_Speed = L_MotorSpeed;
+  int currentR_Speed = R_MotorSpeed;
+
+  
+  if (isBoosterActive) {
+    if (millis() - startTime < 1500) {
+      currentL_Speed = 250; // 250일때 안정적
+      currentR_Speed = 250; // 250일때 안정적
+    } else {
+      isBoosterActive = false; 
+    }
   }
   
-  // 2. 우회전 (오른쪽 검은선 감지)
-  else if (L == 0 && C == 0 && R == 1) {
-    digitalWrite(LeftMotor_3_pin, 1);  digitalWrite(LeftMotor_4_pin, 0);
-    digitalWrite(RightMotor_1_pin, 0); digitalWrite(RightMotor_2_pin, 1);
-    analogWrite(LeftMotor_E_pin, speed_turn_outer);
-    analogWrite(RightMotor_E_pin, speed_turn_inner - diff); // 역회전도 동일하게 보정
+  
+  if ( L == LOW && C == HIGH && R == LOW ) {
+    motor_control(1, 1, currentR_Speed, currentL_Speed); 
+  }
+  else if (L == LOW && R == HIGH ){
+    motor_control(-1, 1, currentR_Speed + 36, currentL_Speed);  // +33, 34(가장 좋은 속도),36
+  }
+  else if (L == HIGH && R == LOW ) {
+    motor_control(1, -1, currentR_Speed, currentL_Speed + 34);   // +33, 32(가장 좋은 속도),34
   }
   
-  // 3. 좌회전 (왼쪽 검은선 감지)
-  else if (L == 1 && C == 0 && R == 0) {
-    digitalWrite(LeftMotor_3_pin, 0);  digitalWrite(LeftMotor_4_pin, 1);
-    digitalWrite(RightMotor_1_pin, 1); digitalWrite(RightMotor_2_pin, 0);
-    analogWrite(LeftMotor_E_pin, speed_turn_inner);
-    analogWrite(RightMotor_E_pin, speed_turn_outer - diff); // 바깥쪽 돌 때도 보정
-  }
+
+}
+
+void motor_control(int R_dir, int L_dir, int R_speed, int L_speed) {
+  digitalWrite(RightMotor_1_pin, R_dir == 1 ? HIGH : LOW);
+  digitalWrite(RightMotor_2_pin, R_dir == 1 ? LOW : HIGH);
+  digitalWrite(LeftMotor_3_pin, L_dir == 1 ? HIGH : LOW);
+  digitalWrite(LeftMotor_4_pin, L_dir == 1 ? LOW : HIGH);
+
+  analogWrite(RightMotor_E_pin, constrain(R_speed, 0, 255));
+  analogWrite(LeftMotor_E_pin, constrain(L_speed, 0, 255));
 }
